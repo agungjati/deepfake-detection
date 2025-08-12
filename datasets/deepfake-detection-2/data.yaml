@@ -1,0 +1,12 @@
+names:
+- defect
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: deepfake-detection-qdtvy
+  url: https://universe.roboflow.com/ttetst/deepfake-detection-qdtvy/dataset/2
+  version: 2
+  workspace: ttetst
+test: ../test/images
+train: ../train/images
+val: ../valid/images
