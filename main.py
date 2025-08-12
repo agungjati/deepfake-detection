@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import shutil
 import os
@@ -10,6 +11,15 @@ import io
 model = YOLO("runs/detect/yolov8_deepfake/weights/best.pt")  # Replace with your model path
 
 app = FastAPI()
+
+# CORS FIX 🔧
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Replace with frontend URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):

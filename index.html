@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Defect Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    video, canvas, img {
+      width: 480px;
+      height: 360px;
+      border: 2px solid #333;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      margin: 10px;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Defect Detection</h1>
+
+  <video id="video" autoplay></video>
+  <br>
+  <button id="capture">📷 Capture & Detect</button>
+  <br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <h3>Detection Result:</h3>
+  <img id="result" alt="Detected Image Will Appear Here"/>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultImg = document.getElementById('result');
+    const captureButton = document.getElementById('capture');
+
+    // Ask for webcam access
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => video.srcObject = stream)
+      .catch(err => alert("Webcam access denied."));
+
+    captureButton.addEventListener('click', async () => {
+      // Draw video frame to canvas
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      // Convert canvas to Blob
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('file', blob, 'capture.jpg');
+
+        try {
+          // Send to FastAPI backend
+          const response = await fetch('http://127.0.0.1:8000/detect', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('Detection failed');
+
+          // Convert response to image
+          const imageBlob = await response.blob();
+          const imageURL = URL.createObjectURL(imageBlob);
+          resultImg.src = imageURL;
+        } catch (err) {
+          alert('Error: ' + err.message);
+        }
+      }, 'image/jpeg');
+    });
+  </script>
+</body>
+</html>
